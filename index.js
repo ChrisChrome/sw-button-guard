@@ -16,7 +16,7 @@ app.get("/request", async (req, res) => {
 			currentUserId = req.query.steamid
 			client.channels.fetch(config.discord.channel).then(cha => {
 				cha.send({
-					content: `Someone is requesting the panels to be opened`,
+					content: `${decodeURI(req.query.name)} is requesting the panels to be opened`,
 					components: [{
 						type: 1,
 						components: [
@@ -36,7 +36,7 @@ app.get("/request", async (req, res) => {
 					}]
 				}).then(msg => {
 					state = "wait"
-					setTimeout(() => {
+					currentTimeout = setTimeout(() => {
 						if (state == "wait") {
 							state = "timeout"
 							msg.edit({
@@ -44,7 +44,8 @@ app.get("/request", async (req, res) => {
 								components: []
 							})
 						}
-					}, 30000)
+					}, 10000)
+					res.send("wait")
 				})
 			})
 			break;
@@ -57,24 +58,33 @@ app.get("/request", async (req, res) => {
 			console.log("timeout")
 			res.send("to")
 			state = "idle"
+			currentUserId = null;
+			clearTimeout(currentTimeout)
+			currentTimeout = null;
 			break;
 
 		case "open": // Discord user accepted the request
 			console.log("open")
 			res.send("open")
 			state = "idle"
+			currentUserId = null;
+			clearTimeout(currentTimeout)
 			break;
 
 		case "deny": // Discord user denied the request
 			console.log("deny")
 			res.send("deny")
 			state = "idle"
+			currentUserId = null;
+			clearTimeout(currentTimeout)
 			break;
 
 		default:
 			console.log("error")
 			res.send("error")
 			state = "idle"
+			currentUserId = null;
+			clearTimeout(currentTimeout)
 			break;
 	}
 });
@@ -91,9 +101,17 @@ client.on("interactionCreate", async (interaction) => {
 		if (state == "idle") return interaction.reply({ content: "Timed out", ephemeral: true })
 		if (interaction.customId === "open") {
 			interaction.reply({ content: "Panel will open", ephemeral: true })
+			interaction.message.edit({
+				content: `The request has been accepted`,
+				components: []
+			})
 			state = "open"
 		} else if (interaction.customId === "deny") {
 			interaction.reply({ content: "Panel access denied", ephemeral: true })
+			interaction.message.edit({
+				content: `The request has been denied`,
+				components: []
+			})
 			state = "deny"
 		}
 	}
@@ -102,5 +120,7 @@ client.on("interactionCreate", async (interaction) => {
 
 var state = "idle"
 var currentUserId = null;
+var currentTimeout = null;
+var currentMsg = null;
 
 client.login(config.discord.token)

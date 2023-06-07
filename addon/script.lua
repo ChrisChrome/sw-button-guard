@@ -14,14 +14,14 @@ function onCreate()
 end
 
 function onTick()
-	tick = tick + 1
-	if (tick == 60) then
-		if (rusr) then
+	if (rusr) then
+		tick = tick + 1
+		if (tick == 60) then
 			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[rusr])
 		end
-	end
-	if (tick > 65) then
-		tick = 65 -- Keep it in a loop until 
+		if (tick > 65) then
+			tick = 65 -- Keep it in a loop until
+		end
 	end
 end
 
@@ -71,6 +71,7 @@ function httpReply(iport, request, reply)
 		tick = 0
 	else
 		server.announce("Door Controls", "An unknown error has occured, please contact the server owner!", rusr)
+		if debug then server.announce("Door Controls", "Error: " .. reply, rusr) end
 		rusr = nil
 	end
 end
@@ -84,10 +85,23 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 				server.pressVehicleButton(i, "door")
 			end
 		else
-			if (rusr ~= user_peer_id) then return end
-			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[user_peer_id])
+			if ((rusr ~= user_peer_id) and (rusr ~= nil)) then return end
+			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[user_peer_id] .. "&name=" .. encode(server.getPlayerName(user_peer_id)))
 			rusr = user_peer_id
 			server.announce("Door Controls", "A request has been sent to server staff, please wait...", user_peer_id)
 		end
 	end
+end
+
+function encode(str)
+	if str == nil then
+		return ""
+	end
+	str = string.gsub(str, "([^%w _ %- . ~])", cth)
+	str = str:gsub(" ", "%%20")
+	return str
+end
+
+function cth(c)
+	return string.format("%%%02X", string.byte(c))
 end
