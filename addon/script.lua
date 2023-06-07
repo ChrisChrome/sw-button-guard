@@ -20,6 +20,9 @@ function onTick()
 			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[rusr])
 		end
 	end
+	if (tick > 65) then
+		tick = 65 -- Keep it in a loop until 
+	end
 end
 
 function onPlayerJoin(steam_id, name, peer_id, is_admin, is_auth)
@@ -65,8 +68,7 @@ function httpReply(iport, request, reply)
 		server.announce("Door Controls", "You are being rate limited, please wait a few seconds!", rusr)
 		rusr = nil
 	elseif reply == "wait" then -- Waiting on a response from a staff member, set the tick counter to 0 and wait for it to try again, dont clear rusr or respond
-
-
+		tick = 0
 	else
 		server.announce("Door Controls", "An unknown error has occured, please contact the server owner!", rusr)
 		rusr = nil
