@@ -32,7 +32,7 @@ app.get("/request", async (req, res) => {
 						]
 					}]
 				}).then(msg => {
-
+					state = "wait"
 					setTimeout(() => {
 						if (state == "wait") {
 							state = "timeout"
