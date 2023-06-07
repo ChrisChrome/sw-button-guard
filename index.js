@@ -88,7 +88,7 @@ client.on("ready", () => {
 
 client.on("interactionCreate", async (interaction) => {
 	if (interaction.isButton()) {
-		if (state == idle) return interaction.reply({ content: "Timed out", ephemeral: true })
+		if (state == "idle") return interaction.reply({ content: "Timed out", ephemeral: true })
 		if (interaction.customId === "open") {
 			interaction.reply({ content: "Panel will open", ephemeral: true })
 			state = "open"
