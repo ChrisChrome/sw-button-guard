@@ -7,12 +7,12 @@ const app = express();
 
 app.get("/request", async (req, res) => {
 	console.log(req.query)
-	console.log(state)
 	if (req.query.auth != config.auth) return res.send("auth")
 	if (req.query.steamid != currentUserId) return res.send("busy");
 	console.log("Testing")
 	switch (state) {
 		case "idle":
+			console.log("idle")
 			currentUserId = req.query.steamid
 			client.channels.fetch(config.discord.channel).then(cha => {
 				cha.send({
@@ -49,25 +49,30 @@ app.get("/request", async (req, res) => {
 			})
 			break;
 		case "wait": // Waiting for input from discord
+			console.log("wait")
 			res.send("wait")
 			break;
 
 		case "timeout": // Discord user did not respond in time
+			console.log("timeout")
 			res.send("to")
 			state = "idle"
 			break;
 
 		case "open": // Discord user accepted the request
+			console.log("open")
 			res.send("open")
 			state = "idle"
 			break;
 
 		case "deny": // Discord user denied the request
+			console.log("deny")
 			res.send("deny")
 			state = "idle"
 			break;
 
 		default:
+			console.log("error")
 			res.send("error")
 			state = "idle"
 			break;
