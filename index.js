@@ -6,6 +6,7 @@ const express = require('express');
 const app = express();
 
 app.get("/request", async (req, res) => {
+	if (req.query.auth != config.auth) return res.send("auth")
 	if(curReq != null) return res.send("busy");
 	client.channels.fetch(config.discord.channel).then(cha => {
 		cha.send({

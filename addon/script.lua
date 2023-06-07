@@ -1,10 +1,11 @@
 -- g_savedata table that persists between game sessions
 g_savedata = {}
-steam_ids = {}
-rip = false
-rusr = nil
-port = 9008
-debug = true
+local steam_ids = {}
+local rip = false
+local rusr = nil
+local port = 9008
+local auth = "1234567890" -- You should change this to something random, make sure to update the addon too
+local debug = false -- All this does is disable the admin check for the hangar command, so you can test it while being admin
 
 function onCreate()
 	x = 0
@@ -48,8 +49,14 @@ function httpReply(iport, request, reply)
 	elseif reply == "busy" then
 		server.announce("Door Controls", "The system is busy, please try again in a few seconds!", rusr)
 		rusr = nil
-	else
+	elseif reply == "auth" then
+		server.announce("Door Controls", "There appears to be a misconfiguration with the addon, please contact the server owner!", rusr)
+		rusr = nil
+	elseif reply == "to" then
 		server.announce("Door Controls", "Nobody responded to the request, sorry!", rusr)
+		rusr = nil
+	else
+		server.announce("Door Controls", "An unknown error has occured, please contact the server owner!", rusr)
 		rusr = nil
 	end
 end
@@ -67,7 +74,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 				server.announce("Door Controls", "A request has already been sent, please wait...", user_peer_id)
 				return
 			else
-				server.httpGet(port, "/request")
+				server.httpGet(port, "/request?auth=" .. auth)
 				rusr = user_peer_id
 				server.announce("Door Controls", "A request has been sent to server staff, please wait...", user_peer_id)
 			end
