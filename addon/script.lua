@@ -43,7 +43,6 @@ end
 
 function httpReply(iport, request, reply)
 	if iport ~= port then return end
-	if request ~= "/request" then return end
 	if reply == "open" then -- Accepted
 		server.announce("Door Controls", "Server staff have triggered the panels to open, please open the hangar doors!",
 			rusr)
@@ -68,6 +67,7 @@ function httpReply(iport, request, reply)
 		server.announce("Door Controls", "You are being rate limited, please wait a few seconds!", rusr)
 		rusr = nil
 	elseif reply == "wait" then -- Waiting on a response from a staff member, set the tick counter to 0 and wait for it to try again, dont clear rusr or respond
+		if debug then server.announce("Door Controls", "Waiting for a response from a staff member...", rusr) end
 		tick = 0
 	else
 		server.announce("Door Controls", "An unknown error has occured, please contact the server owner!", rusr)
@@ -84,6 +84,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 				server.pressVehicleButton(i, "door")
 			end
 		else
+			if (rusr ~= user_peer_id) then return end
 			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[user_peer_id])
 			rusr = user_peer_id
 			server.announce("Door Controls", "A request has been sent to server staff, please wait...", user_peer_id)
