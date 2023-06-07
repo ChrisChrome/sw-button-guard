@@ -8,7 +8,7 @@ const app = express();
 app.get("/request", async (req, res) => {
 	console.log(req.query)
 	if (req.query.auth != config.auth) return res.send("auth")
-	if (req.query.steamid != currentUserId) return res.send("busy");
+	if (currentUserId && (req.query.steamid != currentUserId)) return res.send("busy");
 	console.log("Testing")
 	switch (state) {
 		case "idle":
