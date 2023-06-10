@@ -16,7 +16,7 @@ app.get("/request", async (req, res) => {
 			currentUserId = req.query.steamid
 			client.channels.fetch(config.discord.channel).then(cha => {
 				cha.send({
-					content: `${decodeURI(req.query.name)} is requesting the panels to be opened`,
+					content: `${decodeURI(req.query.name)} on ${decodeURI(req.query.server)} is requesting the panels to be opened`,
 					components: [{
 						type: 1,
 						components: [
@@ -40,7 +40,7 @@ app.get("/request", async (req, res) => {
 						if (state == "wait") {
 							state = "timeout"
 							msg.edit({
-								content: `The request has timed out`,
+								content: `${msg.content}\nThe request has timed out`,
 								components: []
 							})
 						}
@@ -102,14 +102,14 @@ client.on("interactionCreate", async (interaction) => {
 		if (interaction.customId === "open") {
 			interaction.reply({ content: "Panel will open", ephemeral: true })
 			interaction.message.edit({
-				content: `The request has been accepted`,
+				content: `${interaction.msg.content}\nThe request has been accepted`,
 				components: []
 			})
 			state = "open"
 		} else if (interaction.customId === "deny") {
 			interaction.reply({ content: "Panel access denied", ephemeral: true })
 			interaction.message.edit({
-				content: `The request has been denied`,
+				content: `${interaction.msg.content}\nThe request has been denied`,
 				components: []
 			})
 			state = "deny"
