@@ -6,8 +6,10 @@ local port = 9008
 local auth = "1234567890" -- You should change this to something random, make sure to update the addon too
 local debug = false        -- All this does is disable the admin check for the hangar command, so you can test it while being admin
 local tick = 0
+local server_identity = "Server"
 
 function onCreate()
+	server.command("ident")
 	for i, e in pairs(server.getPlayers()) do
 		steam_ids[e.id] = e.steam_id
 	end
@@ -78,6 +80,14 @@ end
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, ...)
 	args = { ... }
+	if command == "identresp" and user_peer_id == -1 then -- This is a response to the ident from and identity provider
+		local ident = ""
+		for i,v in ipairs(args) do
+			ident = ident .. v .. " "
+		end
+		ident = string.sub(ident, 1, -2)
+		server_identity = ident
+	end
 	if debug then is_admin = false end
 	if command == "?hangar" then
 		if is_admin then
