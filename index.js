@@ -1,6 +1,6 @@
 const config = require("./config.json")
 const Discord = require("discord.js")
-const client = new Discord.Client({ intents: ["Guilds", "GuildMessages"] })
+const client = new Discord.Client({ intents: ["Guilds", "GuildMessages", "MessageContent"] })
 // Initialize express
 const express = require('express');
 const app = express();
@@ -40,11 +40,11 @@ app.get("/request", async (req, res) => {
 						if (state == "wait") {
 							state = "timeout"
 							msg.edit({
-								content: `${msg.content}\nThe request has timed out`,
+								content: `The request has timed out`,
 								components: []
 							})
 						}
-					}, 10000)
+					}, 60000)
 					res.send("wait")
 				})
 			})
@@ -102,14 +102,14 @@ client.on("interactionCreate", async (interaction) => {
 		if (interaction.customId === "open") {
 			interaction.reply({ content: "Panel will open", ephemeral: true })
 			interaction.message.edit({
-				content: `${interaction.msg.content}\nThe request has been accepted`,
+				content: `The request has been accepted`,
 				components: []
 			})
 			state = "open"
 		} else if (interaction.customId === "deny") {
 			interaction.reply({ content: "Panel access denied", ephemeral: true })
 			interaction.message.edit({
-				content: `${interaction.msg.content}\nThe request has been denied`,
+				content: `The request has been denied`,
 				components: []
 			})
 			state = "deny"

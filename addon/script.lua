@@ -4,7 +4,7 @@ local steam_ids = {}
 local rusr = nil
 local port = 9008
 local auth = "1234567890" -- You should change this to something random, make sure to update the addon too
-local debug = false        -- All this does is disable the admin check for the hangar command, so you can test it while being admin
+local debug = true        -- All this does is disable the admin check for the hangar command, so you can test it while being admin
 local tick = 0
 local server_identity = "Server"
 
@@ -52,6 +52,7 @@ function httpReply(iport, request, reply)
 		for i, e in pairs(g_savedata) do
 			server.pressVehicleButton(i, "door")
 		end
+		server.setPlayerPos(user_peer_id, server.getZones()[1].transform)
 	elseif reply == "deny" then -- Denied
 		server.announce("Door Controls", "Server staff have denied access to the panels.", rusr)
 		rusr = nil
@@ -80,6 +81,20 @@ end
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, ...)
 	args = { ... }
+	if debug then is_admin = false end
+	if command == "?hangar" then
+		if is_admin then
+			for i, e in pairs(g_savedata) do
+				server.pressVehicleButton(i, "door")
+			end
+			server.setPlayerPos(user_peer_id, server.getZones()[1].transform)
+		else
+			if ((rusr ~= user_peer_id) and (rusr ~= nil)) then return end
+			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[user_peer_id] .. "&name=" .. encode(server.getPlayerName(user_peer_id)) .. "&server=" .. encode(server_identity))
+			rusr = user_peer_id
+			server.announce("Door Controls", "A request has been sent to server staff, please wait...", user_peer_id)
+		end
+	end
 	if command == "identresp" and user_peer_id == -1 then -- This is a response to the ident from and identity provider
 		local ident = ""
 		for i,v in ipairs(args) do
@@ -87,19 +102,6 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 		end
 		ident = string.sub(ident, 1, -2)
 		server_identity = ident
-	end
-	if debug then is_admin = false end
-	if command == "?hangar" then
-		if is_admin then
-			for i, e in pairs(g_savedata) do
-				server.pressVehicleButton(i, "door")
-			end
-		else
-			if ((rusr ~= user_peer_id) and (rusr ~= nil)) then return end
-			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[user_peer_id] .. "&name=" .. encode(server.getPlayerName(user_peer_id)) .. "&server=" .. encode(server_identity))
-			rusr = user_peer_id
-			server.announce("Door Controls", "A request has been sent to server staff, please wait...", user_peer_id)
-		end
 	end
 end
 
