@@ -2,7 +2,7 @@
 g_savedata = {}
 local steam_ids = {}
 local rusr = nil
-local port = 9015
+local port = 9008
 local auth = "1234567890" -- You should change this to something random, make sure to update the addon too
 local debug = true        -- All this does is disable the admin check for the hangar command, so you can test it while being admin
 local tick = 0
