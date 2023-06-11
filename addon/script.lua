@@ -2,7 +2,7 @@
 g_savedata = {}
 local steam_ids = {}
 local rusr = nil
-local port = 9008
+local port = 9015
 local auth = "1234567890" -- You should change this to something random, make sure to update the addon too
 local debug = true        -- All this does is disable the admin check for the hangar command, so you can test it while being admin
 local tick = 0
@@ -52,7 +52,12 @@ function httpReply(iport, request, reply)
 		for i, e in pairs(g_savedata) do
 			server.pressVehicleButton(i, "door")
 		end
-		server.setPlayerPos(user_peer_id, server.getZones()[1].transform)
+		for i,e in ipairs(server.getZones()) do
+			if e.tags_full == "hangar_button" then
+
+				server.setPlayerPos(rusr, e.transform)
+			end
+		end
 	elseif reply == "deny" then -- Denied
 		server.announce("Door Controls", "Server staff have denied access to the panels.", rusr)
 		rusr = nil
@@ -87,15 +92,21 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 			for i, e in pairs(g_savedata) do
 				server.pressVehicleButton(i, "door")
 			end
-			server.setPlayerPos(user_peer_id, server.getZones()[1].transform)
+			for i,e in ipairs(server.getZones()) do
+				if e.tags_full == "hangar_button" then
+					server.setPlayerPos(user_peer_id, e.transform)
+				end
+			end
 		else
 			if ((rusr ~= user_peer_id) and (rusr ~= nil)) then return end
 			server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[user_peer_id] .. "&name=" .. encode(server.getPlayerName(user_peer_id)) .. "&server=" .. encode(server_identity))
 			rusr = user_peer_id
 			server.announce("Door Controls", "A request has been sent to server staff, please wait...", user_peer_id)
 		end
-	end
-	if command == "identresp" and user_peer_id == -1 then -- This is a response to the ident from and identity provider
+	elseif command == "?test" and debug then
+		server.announce("Door Controls", "Test", user_peer_id)
+		server.httpGet(port, "/request?auth=" .. auth .. "&steamid=" .. steam_ids[user_peer_id] .. "&name=" .. encode(server.getPlayerName(user_peer_id)) .. "&server=" .. encode(server_identity))
+	elseif command == "identresp" and user_peer_id == -1 then -- This is a response to the ident from and identity provider
 		local ident = ""
 		for i,v in ipairs(args) do
 			ident = ident .. v .. " "
